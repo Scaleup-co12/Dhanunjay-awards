@@ -59,6 +59,13 @@ p { margin: 0 0 1em; }
   margin: 0 auto;
   padding: 0 24px;
 }
+/* Beyond 1600px the fluid calc() keeps growing the container indefinitely,
+   stretching the header (logo/nav gap) and grids across huge empty space on
+   large monitors — cap it at the width the formula already reaches at 1600px
+   so there's no visible jump. */
+@media (min-width: 1600px) {
+  .container { max-width: 1440px; }
+}
 
 .text-gold { color: var(--gold-700); }
 
@@ -977,7 +984,11 @@ a.product-card { cursor: pointer; }
   visibility: hidden;
   transform: translateY(-6px);
   transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
-  z-index: 50;
+  /* Above .social-fab (z-index 900) — on short viewports this panel's
+     scrolled position can coincide with the fixed FAB in the corner, and an
+     intentionally-opened popup should never lose clicks to the ambient
+     floating button sitting on top of it. */
+  z-index: 950;
 }
 .phone-choice.open .phone-choice-panel { opacity: 1; visibility: visible; transform: translateY(0); }
 .contact-list .phone-choice-panel a {
@@ -1156,7 +1167,11 @@ a.product-card { cursor: pointer; }
   .logo-img { height: 60px; }
   .site-header.is-scrolled .logo-img { height: 48px; }
   .catalog-layout { grid-template-columns: 1fr; gap: 24px; }
-  .category-sidebar { position: static; }
+  /* .category-list below is a nowrap flex row meant to scroll horizontally
+     within itself — without min-width:0 here, the grid item's default
+     min-width:auto lets it expand to the row's full intrinsic content width
+     instead of clipping to the 1fr track, blowing out the whole page width. */
+  .category-sidebar { position: static; min-width: 0; }
   .category-list {
     flex-direction: row;
     overflow-x: auto;
@@ -1194,6 +1209,14 @@ a.product-card { cursor: pointer; }
     padding: 12px 24px 24px;
     gap: 14px;
     display: none;
+    /* This menu lives inside the fixed header, which has no scroll of its
+       own — on short viewports (landscape phones, small screens), especially
+       with a category dropdown expanded, its content can exceed the space
+       below the header. Without its own scroll, the rest (Gifts,
+       Felicitations, Contact us) would be permanently unreachable. */
+    max-height: calc(100vh - var(--header-height, 156px));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   .main-nav.open { display: flex; }
   .nav-toggle { display: flex; }
@@ -1217,7 +1240,7 @@ a.product-card { cursor: pointer; }
   .dropdown-panel a { color: var(--ink-soft); }
   .dropdown-panel a:hover { color: var(--gold-600); }
   .dropdown-panel a.active { color: var(--gold-600); }
-  .nav-dropdown.open .dropdown-panel { max-height: 720px; padding-top: 12px; padding-bottom: 4px; }
+  .nav-dropdown.open .dropdown-panel { max-height: 720px; padding-top: 12px; padding-bottom: 4px; transform: none; }
   .hero-marquee-item { height: 220px; }
   .hero-marquee-track { gap: 28px; padding: 0 24px; }
   .section { padding: 72px 0; }
